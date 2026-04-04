@@ -352,3 +352,33 @@ php artisan make:test PostTest
 php artisan make:test SavedPostTest
 php artisan make:test LikeTest
 ```
+
+---
+
+- 各testに追加
+
+```
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use RefreshDatabase;
+```
+
+- 一個ずつ実行していく
+- `php artisan test --filter=AuthTest`
+- Laravelでは、テストデータ作成にmodel factoryを使う
+
+```
+php artisan make:factory PostFactory --model=Post
+php artisan make:factory ProfileFactory --model=Profile
+```
+
+---
+
+- `php artisan test --filter=SavedPostTest`
+- `php artisan test --filter=LikeTest`
+- `php artisan test --filter=PostTest`
+- 最後にすべて実行
+- `php artisan test`
+
+---
+
+- ***

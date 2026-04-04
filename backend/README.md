@@ -30,7 +30,7 @@ http://127.0.0.1:8000
 
 ### phpの初期画面を変更
 
-- 簡単にroutes/web.phpの画面を変更
+#### routes/web.phpの画面を変更
 
 ```
 <?php
@@ -49,7 +49,7 @@ Route::get('/', function () {
 
 ### post tableの作成
 
-- model,migrationsにPostを作成
+#### model,migrationsにPostを作成
 
 ```
 php artisan make:model Post -m
@@ -57,7 +57,8 @@ php artisan make:model Post -m
 
 ---
 
-- migrationの中身を変更
+#### migrationの中身を変更
+
 - まずは認証なしで作成
 
 ```
@@ -70,7 +71,7 @@ $table->timestamps();
 
 ---
 
-- Post.phpの編集
+#### Post.phpの編集
 
 ```
 protected $fillable = [
@@ -82,7 +83,7 @@ protected $fillable = [
 
 ---
 
-- Controllerの作成
+#### Controllerの作成
 
 ```
 php artisan make:controller PostController
@@ -90,11 +91,13 @@ php artisan make:controller PostController
 
 - または`php artisan make:controller PostController --resource`
 
-- PostController.phpの編集
+#### PostController.phpの編集
+
+- 割愛
 
 ---
 
-- routes/api.phpの作成
+#### routes/api.phpの作成
 
 ```
 php artisan install:api
@@ -106,13 +109,14 @@ php artisan install:api
 
 ### Postmanで確認
 
-- 前提条件
+#### 前提条件
+
 - routeが定義されているか確認
   `php artisan route:list`
 
 ---
 
-- されていない場合実行
+#### されていない場合実行
 
 ```
 php artisan optimize:clear
@@ -126,7 +130,7 @@ php artisan route:clear
 php artisan cache:clear
 ```
 
-### 確認例
+#### 確認例
 
 - GET
   `http://127.0.0.1:8000/api/posts`
@@ -153,3 +157,102 @@ php artisan cache:clear
   "message": "Post deleted successfully"
 }
 ```
+
+### APIを追加
+
+- patchを追加
+
+### 認証設定の追加
+
+#### Sanctumを導入する
+
+- installされているか確認
+- `composer show laravel/sanctum`
+- `Test-Path .\config\sanctum.php`
+- `php artisan migrate:status`
+
+##### Sanctumの導入方法
+
+```
+composer require laravel/sanctum
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+php artisan migrate
+```
+
+#### Posts tableを認証設定に変更
+
+#### user_idを必須にする
+
+- /migrationを編集
+- 一度リセット`php artisan migrate:fresh`(学習段階用のみ使用)
+- /Modelを編集
+- Sanctumは、認証トークン管理を提供するが、登録やログイン用の画面・ルートそのものは提供しない
+
+#### controllerの追加
+
+- 例：`php artisan make:controller AuthController --resource`：（合わなかったので、別の方法を模索中）
+- 使用するもの
+
+```
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
+```
+
+---
+
+- routes/api.phpにまとめる
+
+---
+
+#### 責務分離
+
+- rules(),policy()
+
+```
+php artisan make:request StorePostRequest
+php artisan make:request UpdatePostRequest
+php artisan make:policy PostPolicy --model=Post
+```
+
+---
+
+- エラー・警告が出るとき：`$this->authorize('view', $post)`
+- /Controller.php => `use AuthorizesRequests`
+
+---
+
+### アカウントの公開/非公開 & 投稿公開/非公開の2段階の設定を追加
+
+#### profile tableの作成
+
+```
+php artisan make:model Profile -m
+php artisan make:controller ProfileController
+php artisan make:policy ProfilePolicy --model=Profile
+php artisan make:request UpdateProfileRequest
+```
+
+---
+
+- UserとProfileは一対一で作成
+- Profile用に内容を変更する
+
+---
+
+#### 他USERの投稿一覧をみれるようにする
+
+- `/api/users/{user}/posts`の機能を追加
+
+---
+
+#### register時にprofileを自動作成できるようにする
+
+- `php artisan migrate:fresh`開発中なので、これでテーブルを空にする
+
+#### 保存機能を追加する
+
+- `php artisan make:model SavedPost -m`
+
+#### profileを作っていないのに投稿ができないようにする？→Gust USERだからOK？→ただ、レジスターしたなら、エラーが出るべきなのでは？

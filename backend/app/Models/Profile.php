@@ -4,18 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Post extends Model
+class Profile extends Model
 {
     protected $fillable = [
         'user_id',
-        'body',
+        'display_name',
+        'bio',
         'is_public',
     ];
+
     protected $casts = [
-        'is_public'=>'boolean',
+        'is_public' => 'boolean',
     ];
-    // Eloquent のリレーション定義
-    public function user(){
+
+    public function user()
+    {
         return $this->belongsTo(User::class);
     }
 }

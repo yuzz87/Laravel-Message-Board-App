@@ -2,65 +2,148 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 use App\Models\Post;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
-    // 一覧取得
     public function index()
     {
-        $posts = Post::latest()->get();
+        $posts = Post::with(['user:id,name', 'user.profile:id,user_id,is_public'])
+            ->where('is_public', true)
+            ->whereHas('user.profile', function ($query) {
+                $query->where('is_public', true);
+            })
+            ->latest()
+            ->get();
 
-        return response()->json($posts);
+        return response()->json([
+            'success' => true,
+            'data' => $posts,
+        ]);
     }
 
-    // 1件取得
-    public function show($id)
+    public function show(Request $request, Post $post)
     {
-        $post = Post::find($id);
+        $post->load(['user:id,name', 'user.profile:id,user_id,is_public']);
 
-        if (!$post) {
+        if ($request->user()) {
+            $this->authorize('view', $post);
+        } else {
+            $profile = $post->user?->profile;
+
+            if (! $profile || ! $profile->is_public || ! $post->is_public) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Post not found',
+                ], 404);
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $post,
+        ]);
+    }
+
+    public function myPosts(Request $request)
+    {
+        $posts = Post::where('user_id', $request->user()->id)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $posts,
+        ]);
+    }
+
+    public function userPosts(Request $request, User $user)
+    {
+        $user->load('profile');
+
+        $profile = $user->profile;
+
+        if (! $profile) {
             return response()->json([
-                'message' => 'Post not found'
+                'success' => false,
+                'message' => 'Profile not found',
             ], 404);
         }
 
-        return response()->json($post);
+        $authUser = $request->user();
+
+        // 本人なら公開/非公開すべて見られる
+        if ($authUser && $authUser->id === $user->id) {
+            $posts = $user->posts()
+                ->latest()
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $posts,
+            ]);
+        }
+
+        // 他人・Guest はプロフィール公開が前提
+        if (! $profile->is_public) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User posts not found',
+            ], 404);
+        }
+
+        $posts = $user->posts()
+            ->where('is_public', true)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $posts,
+        ]);
     }
 
-    // 作成
-    public function store(Request $request)
+    public function store(StorePostRequest $request)
     {
-        $validated = $request->validate([
-            'body' => ['required', 'string'],
-            'is_public' => ['required', 'boolean'],
-        ]);
+        $this->authorize('create', Post::class);
 
         $post = Post::create([
-            'user_id' => null,
-            'body' => $validated['body'],
-            'is_public' => $validated['is_public'],
+            'user_id' => $request->user()->id,
+            'body' => $request->validated()['body'],
+            'is_public' => $request->validated()['is_public'],
         ]);
 
-        return response()->json($post, 201);
+        return response()->json([
+            'success' => true,
+            'data' => $post,
+        ], 201);
     }
 
-    // 削除
-    public function destroy($id)
+    public function update(UpdatePostRequest $request, Post $post)
     {
-        $post = Post::find($id);
+        $this->authorize('update', $post);
 
-        if (!$post) {
-            return response()->json([
-                'message' => 'Post not found'
-            ], 404);
-        }
+        $post->update($request->validated());
+
+        return response()->json([
+            'success' => true,
+            'data' => $post,
+        ]);
+    }
+
+    public function destroy(Request $request, Post $post)
+    {
+        $this->authorize('delete', $post);
 
         $post->delete();
 
         return response()->json([
-            'message' => 'Post deleted successfully'
+            'success' => true,
+            'message' => 'Post deleted successfully',
         ]);
     }
 }

@@ -22,18 +22,22 @@ class PostController extends Controller
             })
             ->withCount('likes')
             ->latest()
-            ->get();
+            ->paginate(10);
 
-        $posts->each(function ($post) use ($authUser) {
-            $post->is_liked = $authUser
-                ? $post->likes()->where('user_id', $authUser->id)->exists()
-                : false;
+        $likedPostIds = $authUser
+            ? $authUser->likes()->pluck('post_id')->all()
+            : [];
+
+        $likedPostIdsMap = array_flip($likedPostIds);
+
+        $posts->getCollection()->transform(function ($post) use ($likedPostIdsMap) {
+            $post->is_liked = isset($likedPostIdsMap[$post->id]);
+            return $post;
         });
 
-        return response()->json([
-            'success' => true,
-            'data' => PostSummaryResource::collection($posts),
-        ]);
+        return $this->paginatedResponse(
+            PostSummaryResource::collection($posts)
+        );
     }
 
     public function show(Request $request, Post $post)
@@ -47,23 +51,17 @@ class PostController extends Controller
             $profile = $post->user?->profile;
 
             if (! $profile || ! $profile->is_public || ! $post->is_public) {
-                return response()->json([
-                    'success' => false,
-                    'message' => '投稿が見つかりません',
-                ], 404);
+                return $this->errorResponse('投稿が見つかりません', 404);
             }
         }
 
         $authUser = $request->user();
 
         $post->is_liked = $authUser
-            ? $post->likes()->where('user_id', $authUser->id)->exists()
+            ? $authUser->likes()->where('post_id', $post->id)->exists()
             : false;
 
-        return response()->json([
-            'success' => true,
-            'data' => new PostSummaryResource($post),
-        ]);
+        return $this->successResponse(new PostSummaryResource($post));
     }
 
     public function myPosts(Request $request)
@@ -74,16 +72,19 @@ class PostController extends Controller
             ->where('user_id', $user->id)
             ->withCount('likes')
             ->latest()
-            ->get();
+            ->paginate(10);
 
-        $posts->each(function ($post) use ($user) {
-            $post->is_liked = $post->likes()->where('user_id', $user->id)->exists();
+        $likedPostIds = $user->likes()->pluck('post_id')->all();
+        $likedPostIdsMap = array_flip($likedPostIds);
+
+        $posts->getCollection()->transform(function ($post) use ($likedPostIdsMap) {
+            $post->is_liked = isset($likedPostIdsMap[$post->id]);
+            return $post;
         });
 
-        return response()->json([
-            'success' => true,
-            'data' => PostSummaryResource::collection($posts),
-        ]);
+        return $this->paginatedResponse(
+            PostSummaryResource::collection($posts)
+        );
     }
 
     public function userPosts(Request $request, User $user)
@@ -93,10 +94,7 @@ class PostController extends Controller
         $profile = $user->profile;
 
         if (! $profile) {
-            return response()->json([
-                'success' => false,
-                'message' => 'プロフィールが見つかりません',
-            ], 404);
+            return $this->errorResponse('プロフィールが見つかりません', 404);
         }
 
         $authUser = $request->user();
@@ -106,23 +104,23 @@ class PostController extends Controller
                 ->with(['user.profile'])
                 ->withCount('likes')
                 ->latest()
-                ->get();
+                ->paginate(10);
 
-            $posts->each(function ($post) use ($authUser) {
-                $post->is_liked = $post->likes()->where('user_id', $authUser->id)->exists();
+            $likedPostIds = $authUser->likes()->pluck('post_id')->all();
+            $likedPostIdsMap = array_flip($likedPostIds);
+
+            $posts->getCollection()->transform(function ($post) use ($likedPostIdsMap) {
+                $post->is_liked = isset($likedPostIdsMap[$post->id]);
+                return $post;
             });
 
-            return response()->json([
-                'success' => true,
-                'data' => PostSummaryResource::collection($posts),
-            ]);
+            return $this->paginatedResponse(
+                PostSummaryResource::collection($posts)
+            );
         }
 
         if (! $profile->is_public) {
-            return response()->json([
-                'success' => false,
-                'message' => 'ユーザーの投稿が見つかりません',
-            ], 404);
+            return $this->errorResponse('このユーザーの投稿は見つかりません', 404);
         }
 
         $posts = $user->posts()
@@ -130,18 +128,22 @@ class PostController extends Controller
             ->where('is_public', true)
             ->withCount('likes')
             ->latest()
-            ->get();
+            ->paginate(10);
 
-        $posts->each(function ($post) use ($authUser) {
-            $post->is_liked = $authUser
-                ? $post->likes()->where('user_id', $authUser->id)->exists()
-                : false;
+        $likedPostIds = $authUser
+            ? $authUser->likes()->pluck('post_id')->all()
+            : [];
+
+        $likedPostIdsMap = array_flip($likedPostIds);
+
+        $posts->getCollection()->transform(function ($post) use ($likedPostIdsMap) {
+            $post->is_liked = isset($likedPostIdsMap[$post->id]);
+            return $post;
         });
 
-        return response()->json([
-            'success' => true,
-            'data' => PostSummaryResource::collection($posts),
-        ]);
+        return $this->paginatedResponse(
+            PostSummaryResource::collection($posts)
+        );
     }
 
     public function store(StorePostRequest $request)
@@ -158,10 +160,7 @@ class PostController extends Controller
         $post->loadCount('likes');
         $post->is_liked = false;
 
-        return response()->json([
-            'success' => true,
-            'data' => new PostSummaryResource($post),
-        ], 201);
+        return $this->successResponse(new PostSummaryResource($post), null, 201);
     }
 
     public function update(UpdatePostRequest $request, Post $post)
@@ -175,13 +174,10 @@ class PostController extends Controller
 
         $authUser = $request->user();
         $post->is_liked = $authUser
-            ? $post->likes()->where('user_id', $authUser->id)->exists()
+            ? $authUser->likes()->where('post_id', $post->id)->exists()
             : false;
 
-        return response()->json([
-            'success' => true,
-            'data' => new PostSummaryResource($post),
-        ]);
+        return $this->successResponse(new PostSummaryResource($post));
     }
 
     public function destroy(Request $request, Post $post)
@@ -190,9 +186,6 @@ class PostController extends Controller
 
         $post->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => '投稿を削除しました',
-        ]);
+        return $this->successResponse(null, '投稿を削除しました');
     }
 }

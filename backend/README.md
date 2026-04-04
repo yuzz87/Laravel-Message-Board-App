@@ -381,4 +381,7 @@ php artisan make:factory ProfileFactory --model=Profile
 
 ---
 
-- ***
+#### API Resorceの追加・整理
+
+- php artisan make:resource ProfileResource
+- php artisan make:resource AuthUserResource

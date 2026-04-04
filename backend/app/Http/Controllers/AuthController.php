@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\AuthUserResource;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -38,13 +39,10 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'user' => $user->load('profile'),
-                'token' => $token,
-            ],
-        ], 201);
+        return $this->successResponse([
+            'user' => new AuthUserResource($user->load('profile')),
+            'token' => $token,
+        ], null, 201);
     }
 
     public function login(Request $request)
@@ -64,12 +62,9 @@ class AuthController extends Controller
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-            ],
+        return $this->successResponse([
+            'user' => new AuthUserResource($user),
+            'token' => $token,
         ]);
     }
 
@@ -77,17 +72,13 @@ class AuthController extends Controller
     {
         $request->user()->currentAccessToken()?->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'ログアウトしました',
-        ]);
+        return $this->successResponse(null, 'ログアウトしました');
     }
 
     public function me(Request $request)
     {
-        return response()->json([
-            'success' => true,
-            'data' => $request->user()->load('profile'),
-        ]);
+        return $this->successResponse(
+            new AuthUserResource($request->user()->load('profile'))
+        );
     }
 }

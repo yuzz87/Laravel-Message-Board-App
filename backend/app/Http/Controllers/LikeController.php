@@ -15,22 +15,24 @@ class LikeController extends Controller
     {
         $user = $request->user();
 
-        $items = Like::with(['post.user.profile'])
+        $items = Like::with([
+                'post' => function ($query) {
+                    $query->with(['user.profile'])->withCount('likes');
+                },
+            ])
             ->where('user_id', $user->id)
             ->latest()
-            ->get();
+            ->paginate(10);
 
-        $items->each(function ($like) {
+        $items->getCollection()->each(function ($like) {
             if ($like->post) {
-                $like->post->likes_count = $like->post->likes()->count();
                 $like->post->is_liked = true;
             }
         });
 
-        return response()->json([
-            'success' => true,
-            'data' => LikeResource::collection($items),
-        ]);
+        return $this->paginatedResponse(
+            LikeResource::collection($items)
+        );
     }
 
     public function store(Request $request, Post $post): JsonResponse
@@ -44,10 +46,7 @@ class LikeController extends Controller
             ->exists();
 
         if ($exists) {
-            return response()->json([
-                'success' => false,
-                'message' => 'この投稿にはすでにいいね済みです',
-            ], 422);
+            return $this->errorResponse('この投稿にはすでにいいね済みです', 422);
         }
 
         Like::create([
@@ -55,10 +54,7 @@ class LikeController extends Controller
             'post_id' => $post->id,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'いいねしました',
-        ], 201);
+        return $this->successResponse(null, 'いいねしました', 201);
     }
 
     public function destroy(Request $request, Post $post): JsonResponse
@@ -70,17 +66,11 @@ class LikeController extends Controller
             ->first();
 
         if (! $like) {
-            return response()->json([
-                'success' => false,
-                'message' => 'いいねが見つかりません',
-            ], 404);
+            return $this->errorResponse('いいねが見つかりません', 404);
         }
 
         $like->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'いいねを解除しました',
-        ]);
+        return $this->successResponse(null, 'いいねを解除しました');
     }
 }

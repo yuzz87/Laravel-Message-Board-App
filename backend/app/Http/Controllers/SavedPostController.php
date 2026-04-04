@@ -15,15 +15,27 @@ class SavedPostController extends Controller
     {
         $user = $request->user();
 
-        $items = SavedPost::with(['post.user.profile'])
+        $items = SavedPost::with([
+                'post' => function ($query) {
+                    $query->with(['user.profile'])->withCount('likes');
+                },
+            ])
             ->where('user_id', $user->id)
             ->latest()
-            ->get();
+            ->paginate(10);
 
-        return response()->json([
-            'success' => true,
-            'data' => SavedPostResource::collection($items),
-        ]);
+        $likedPostIds = $user->likes()->pluck('post_id')->all();
+        $likedPostIdsMap = array_flip($likedPostIds);
+
+        $items->getCollection()->each(function ($savedPost) use ($likedPostIdsMap) {
+            if ($savedPost->post) {
+                $savedPost->post->is_liked = isset($likedPostIdsMap[$savedPost->post->id]);
+            }
+        });
+
+        return $this->paginatedResponse(
+            SavedPostResource::collection($items)
+        );
     }
 
     public function store(Request $request, Post $post): JsonResponse
@@ -37,10 +49,7 @@ class SavedPostController extends Controller
             ->exists();
 
         if ($exists) {
-            return response()->json([
-                'success' => false,
-                'message' => 'この投稿はすでに保存済みです',
-            ], 422);
+            return $this->errorResponse('この投稿はすでに保存済みです', 422);
         }
 
         SavedPost::create([
@@ -48,10 +57,7 @@ class SavedPostController extends Controller
             'post_id' => $post->id,
         ]);
 
-        return response()->json([
-            'success' => true,
-            'message' => '投稿を保存しました',
-        ], 201);
+        return $this->successResponse(null, '投稿を保存しました', 201);
     }
 
     public function destroy(Request $request, Post $post): JsonResponse
@@ -63,17 +69,11 @@ class SavedPostController extends Controller
             ->first();
 
         if (! $savedPost) {
-            return response()->json([
-                'success' => false,
-                'message' => '保存データが見つかりません',
-            ], 404);
+            return $this->errorResponse('保存データが見つかりません', 404);
         }
 
         $savedPost->delete();
 
-        return response()->json([
-            'success' => true,
-            'message' => '保存を解除しました',
-        ]);
+        return $this->successResponse(null, '保存を解除しました');
     }
 }

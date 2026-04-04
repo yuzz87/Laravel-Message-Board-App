@@ -251,8 +251,104 @@ php artisan make:request UpdateProfileRequest
 
 - `php artisan migrate:fresh`開発中なので、これでテーブルを空にする
 
-#### 保存機能を追加する
+### 保存機能を追加する
 
 - `php artisan make:model SavedPost -m`
+- `php artisan make:controller SavedPostController`
+- `php artisan make:policy SavedPostPolicy --model=SavedPost`
 
-#### profileを作っていないのに投稿ができないようにする？→Gust USERだからOK？→ただ、レジスターしたなら、エラーが出るべきなのでは？
+---
+
+### Like機能を作成する
+
+- `php artisan make:model Like -m`
+- `php artisan make:controller LikeController`
+- `php artisan make:policy LikePolicy --model=Like`
+
+#### loginとregisterのエラーを修正
+
+#### JSON形式確認→形式統一
+
+#### 責務分離(Resource)
+
+- `php artisan make:resource UserSummaryResource`
+- `php artisan make:resource PostSummaryResource`
+- `php artisan make:resource SavedPostResource`
+- `php artisan make:resource LikeResource`
+
+---
+
+### Feature Test
+
+#### mysqlでtest環境を作る
+
+- ex:`formapp_test` databaseの作成
+- .env.testingの作成->`DB_DATABASE = formapp_test`にする
+- 念のため、新しくkeyを作成 -> `php artisan key:generate --env=testing`
+- mysqlを使用するので`phpunit.xml`に以下があれば、削除する
+
+```
+<env name="DB_CONNECTION" value="sqlite"/>
+<env name="DB_DATABASE" value=":memory:"/>
+```
+
+---
+
+- 環境変数を変更したらキャッシュをクリアする
+
+```
+php artisan config:clear
+php artisan cache:clear
+php artisan optimize:clear
+```
+
+---
+
+- testing環境でDBの接続を確認
+  `php artisan tinker --env=testing`
+
+---
+
+```
+config('database.default');
+config('database.connections.mysql.database');
+```
+
+---
+
+- 期待している出力
+
+```
+> config('database.default');
+
+= "mysql"
+
+> config('database.connections.mysql.database');
+
+= "formapp_test"
+```
+
+---
+
+- 正常であれば、migrationを作成
+  `php artisan migrate --env=testing`
+
+---
+
+- mysql側でtableの確認
+
+```
+USE formapp_test;
+SHOW TABLES;
+```
+
+---
+
+- テストファイルの作成
+
+```
+php artisan make:test AuthTest
+php artisan make:test PostTest
+php artisan make:test SavedPostTest
+php artisan make:test LikeTest
+```

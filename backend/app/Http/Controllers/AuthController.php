@@ -23,7 +23,7 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
-                'password' => $validated['password'],
+                'password' => Hash::make($validated['password']),
             ]);
 
             Profile::create([
@@ -75,11 +75,11 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $request->user()->currentAccessToken()?->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Logged out successfully',
+            'message' => 'ログアウトしました',
         ]);
     }
 

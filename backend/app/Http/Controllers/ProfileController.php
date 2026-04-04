@@ -40,7 +40,7 @@ class ProfileController extends Controller
         if (! $profile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Profile not found',
+                'message' => 'プロフィールが見つかりません',
             ], 404);
         }
 
@@ -49,7 +49,7 @@ class ProfileController extends Controller
         } elseif (! $profile->is_public) {
             return response()->json([
                 'success' => false,
-                'message' => 'Profile not found',
+                'message' => 'プロフィールが見つかりません',
             ], 404);
         }
 

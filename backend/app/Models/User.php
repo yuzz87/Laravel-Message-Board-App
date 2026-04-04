@@ -32,4 +32,20 @@ class User extends Authenticatable
     public function profile(){
         return $this->hasone(Profile::class);
     }
+    public function savedPosts(){
+        return $this->hashMany(SavedPost::class);
+    }
+    public function savedPostItems(){
+        return $this-> belongsToMany(Post::class,'saved_posts')->withTimestamps();
+    }
+    public function likes()
+    {
+    return $this->hasMany(Like::class);
+    }
+
+    public function likedPosts()
+    {
+    return $this->belongsToMany(Post::class, 'likes')->withTimestamps();
+    }
+
 }

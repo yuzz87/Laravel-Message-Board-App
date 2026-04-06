@@ -1,46 +1,66 @@
-import { api } from "./client";
-import type { ApiSuccess } from "../types/api";
-import type { Post } from "../types/post";
+import api from "./client";
 
-export async function getPosts() {
-  const res = await api.get<ApiSuccess<Post[]>>("/posts");
-  return res.data;
-}
-
-export type CreatePostRequest = {
+type PostPayload = {
   body: string;
   is_public: boolean;
 };
 
-export async function createPost(payload: CreatePostRequest) {
-  const res = await api.post<ApiSuccess<Post>>("/posts", payload);
-  return res.data;
+export async function getPosts() {
+  const response = await api.get("/posts");
+  return response.data;
+}
+
+export async function getPost(postId: string | number) {
+  const response = await api.get(`/posts/${postId}`);
+  return response.data;
+}
+
+export async function createPost(payload: PostPayload) {
+  const response = await api.post("/posts", payload);
+  return response.data;
+}
+
+export async function updatePost(postId: string | number, payload: PostPayload) {
+  const response = await api.patch(`/posts/${postId}`, payload);
+  return response.data;
 }
 
 export async function getMyPosts() {
-  const res = await api.get<ApiSuccess<Post[]>>("/my/posts");
-  return res.data;
+  const response = await api.get("/my/posts");
+  return response.data;
 }
 
-export async function getPost(postId: number) {
-  const res = await api.get<ApiSuccess<Post>>(`/posts/${postId}`);
-  return res.data;
+export async function getSavedPosts() {
+  const response = await api.get("/me/saved-posts");
+  return response.data;
 }
 
-export type UpdatePostRequest = {
-  body: string;
-  is_public: boolean;
-};
+export async function getLikedPosts() {
+  const response = await api.get("/me/liked-posts");
+  return response.data;
+}
 
-export async function updatePost(postId: number, payload: UpdatePostRequest) {
-  const res = await api.patch<ApiSuccess<Post>>(`/posts/${postId}`, payload);
-  return res.data;
+export async function getUserPosts(userId: string | number) {
+  const response = await api.get(`/users/${userId}/posts`);
+  return response.data;
 }
-export async function deletePost(postId: number) {
-  const res = await api.delete(`/posts/${postId}`);
-  return res.data;
+
+export async function savePost(postId: string | number) {
+  const response = await api.post(`/posts/${postId}/save`);
+  return response.data;
 }
-export async function getUserPosts(userId: number) {
-  const res = await api.get<ApiSuccess<Post[]>>(`/users/${userId}/posts`);
-  return res.data;
+
+export async function unsavePost(postId: string | number) {
+  const response = await api.delete(`/posts/${postId}/save`);
+  return response.data;
+}
+
+export async function likePost(postId: string | number) {
+  const response = await api.post(`/posts/${postId}/like`);
+  return response.data;
+}
+
+export async function unlikePost(postId: string | number) {
+  const response = await api.delete(`/posts/${postId}/like`);
+  return response.data;
 }

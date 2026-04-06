@@ -1,51 +1,50 @@
-import { api } from "./client";
-import type { ApiSuccess } from "../types/api";
+import api from "./client";
 
-export type LoginRequest = {
-  email: string;
-  password: string;
-};
-
-export type LoginResponseData = {
-  token: string;
-  user: {
+type LoginResponse = {
+  success?: boolean;
+  token?: string;
+  data?: {
+    token?: string;
+    user?: {
+      id: number;
+      name: string;
+      email: string;
+    };
+  };
+  user?: {
     id: number;
     name: string;
     email: string;
   };
 };
 
-export async function login(payload: LoginRequest) {
-  const res = await api.post<ApiSuccess<LoginResponseData>>("/login", payload);
-  return res.data;
-}
-
-export async function logout() {
-  const res = await api.post<ApiSuccess<null>>("/logout");
-  return res.data;
-}
-
-export async function getMe() {
-  const res = await api.get("/me");
-  return res.data;
-}
-export type RegisterRequest = {
+type RegisterPayload = {
   name: string;
   email: string;
   password: string;
   password_confirmation: string;
 };
 
-export type RegisterResponseData = {
-  token: string;
-  user: {
-    id: number;
-    name: string;
-    email: string;
-  };
-};
+export async function login(email: string, password: string) {
+  const response = await api.post<LoginResponse>("/login", {
+    email,
+    password,
+  });
 
-export async function register(payload: RegisterRequest) {
-  const res = await api.post<ApiSuccess<RegisterResponseData>>("/register", payload);
-  return res.data;
+  return response.data;
+}
+
+export async function register(payload: RegisterPayload) {
+  const response = await api.post("/register", payload);
+  return response.data;
+}
+
+export async function logout() {
+  const response = await api.post("/logout");
+  return response.data;
+}
+
+export async function getMe() {
+  const response = await api.get("/me");
+  return response.data;
 }

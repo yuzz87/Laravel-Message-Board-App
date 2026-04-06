@@ -15,4 +15,4 @@ export type AuthContextType = {
   logout: () => Promise<void>;
 };
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);

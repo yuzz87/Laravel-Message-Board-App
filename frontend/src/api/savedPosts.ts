@@ -1,6 +1,24 @@
-import { api } from "./client";
-import type { ApiSuccess } from "../types/api";
-import type { Post } from "../types/post";
+import api from "./client";
+
+type ApiSuccess<T> = {
+  success?: boolean;
+  data: T;
+  message?: string;
+};
+
+type Post = {
+  id: number;
+  body: string;
+  is_public: boolean;
+  created_at?: string;
+  likes_count?: number;
+  is_liked?: boolean;
+  user?: {
+    id: number;
+    name?: string;
+    display_name?: string;
+  };
+};
 
 export async function getSavedPosts() {
   const res = await api.get<ApiSuccess<Post[]>>("/me/saved-posts");

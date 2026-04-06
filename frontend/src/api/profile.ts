@@ -1,6 +1,22 @@
-import { api } from "./client";
-import type { ApiSuccess } from "../types/api";
-import type { Profile } from "../types/profile";
+import api from "./client";
+
+type Profile = {
+  id?: number;
+  display_name: string;
+  bio?: string | null;
+  is_public: boolean;
+  user?: {
+    id: number;
+    name?: string;
+    email?: string;
+  };
+};
+
+type ApiSuccess<T> = {
+  success?: boolean;
+  data: T;
+  message?: string;
+};
 
 export async function getMyProfile() {
   const res = await api.get<ApiSuccess<Profile>>("/profile");
@@ -16,7 +32,7 @@ export async function updateMyProfile(payload: {
   return res.data;
 }
 
-export async function getUserProfile(userId: number) {
+export async function getUserProfile(userId: string | number) {
   const res = await api.get<ApiSuccess<Profile>>(`/users/${userId}`);
   return res.data;
 }

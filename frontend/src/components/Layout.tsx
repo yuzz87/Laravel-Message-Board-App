@@ -14,6 +14,7 @@ import createposticon from "../assets/brush.svg";
 import mypostsicon from "../assets/view.svg";
 import savedpostsicon from "../assets/bookmark-plus.svg";
 import likedpostsicon from "../assets/book-heart.svg";
+import userpenicon from "../assets/user-pen.svg";// edit
 
 type LayoutProps = {
   title: string;
@@ -32,7 +33,7 @@ const menuItems: MenuItem[] = [
   { to: "/login", label: "Login", icon: loginicon, alt: "login" },
   { to: "/register", label: "Register", icon: registericon, alt: "register" },
   { to: "/my-profile", label: "MyProfile", icon: myprofileicon, alt: "myprofile" },
-  { to: "/profile/edit", label: "EditProfile", icon: myprofileicon, alt: "editprofile" },
+  { to: "/profile/edit", label: "EditProfile", icon: userpenicon, alt: "editprofile" },
   { to: "/posts/create", label: "CreatePost", icon: createposticon, alt: "createpost" },
   { to: "/my/posts", label: "MyPosts", icon: mypostsicon, alt: "myposts" },
   { to: "/saved-posts", label: "SavedPosts", icon: savedpostsicon, alt: "savedposts" },

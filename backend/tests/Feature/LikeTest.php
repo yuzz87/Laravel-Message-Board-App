@@ -130,6 +130,7 @@ class LikeTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.0.post.body', 'いいね対象投稿');
+            ->assertJsonPath('data.0.body', 'いいね対象投稿')
+            ->assertJsonPath('data.0.is_liked', true);
     }
 }

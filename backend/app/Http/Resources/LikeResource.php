@@ -7,13 +7,22 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class LikeResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        $post = $this->whenLoaded('post');
+
+        return [
+            'id' => $post?->id,
+            'body' => $post?->body,
+            'is_public' => $post?->is_public,
+            'created_at' => $post?->created_at,
+            'updated_at' => $post?->updated_at,
+            'likes_count' => $post?->likes_count,
+            'is_liked' => true,
+            'user' => $post && $post->relationLoaded('user')
+                ? new UserSummaryResource($post->user)
+                : null,
+            'liked_at' => $this->created_at,
+        ];
     }
 }

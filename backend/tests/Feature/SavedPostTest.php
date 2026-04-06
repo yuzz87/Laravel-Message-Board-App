@@ -130,6 +130,7 @@ class SavedPostTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertJsonPath('data.0.post.body', '保存対象投稿');
+            ->assertJsonPath('data.0.body', '保存対象投稿')
+            ->assertJsonPath('data.0.is_liked', false);
     }
 }

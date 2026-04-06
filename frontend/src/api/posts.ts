@@ -25,6 +25,11 @@ export async function updatePost(postId: string | number, payload: PostPayload) 
   return response.data;
 }
 
+export async function deletePost(postId: string | number) {
+  const response = await api.delete(`/posts/${postId}`);
+  return response.data;
+}
+
 export async function getMyPosts() {
   const response = await api.get("/my/posts");
   return response.data;

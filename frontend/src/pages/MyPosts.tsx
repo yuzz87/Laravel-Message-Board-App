@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
-import { getMyPosts } from "../api/posts";
+import { deletePost, getMyPosts } from "../api/posts";
 
 type PostUser = {
   id: number;
@@ -23,6 +23,7 @@ export default function MyPosts() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchMyPosts() {
@@ -53,6 +54,25 @@ export default function MyPosts() {
     void fetchMyPosts();
   }, []);
 
+  async function handleDelete(postId: number) {
+    const shouldDelete = window.confirm("この投稿を削除しますか？");
+    if (!shouldDelete) return;
+
+    try {
+      setDeletingId(postId);
+      await deletePost(postId);
+      setPosts((prev) => prev.filter((post) => post.id !== postId));
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "投稿削除に失敗しました");
+      } else {
+        setError("投稿削除に失敗しました");
+      }
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   return (
     <Layout title="My Posts">
       <section className="posts-section">
@@ -75,6 +95,9 @@ export default function MyPosts() {
 
                 <div className="post-card-links">
                   <Link to={`/posts/${post.id}/edit`}>Edit</Link>
+                  <button type="button" onClick={() => void handleDelete(post.id)} disabled={deletingId === post.id}>
+                    {deletingId === post.id ? "Deleting..." : "Delete"}
+                  </button>
                 </div>
               </article>
             ))}

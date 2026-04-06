@@ -41,6 +41,7 @@ This README summarizes the current implementation status as of 2026-04-06, separ
   - My posts display
   - Create post
   - Edit post
+  - Delete post (My Posts)
 - Profiles:
   - View my profile
   - Edit my profile
@@ -48,19 +49,16 @@ This README summarizes the current implementation status as of 2026-04-06, separ
 - Saved/Liked lists:
   - Fetch and display saved posts list
   - Fetch and display liked posts list
+  - Save/Unsave and Like/Unlike actions from list UIs
 
 ### Implementation Issues (Known Gaps)
 
-- Save/Like action APIs exist on frontend, but interactive buttons/workflows are not fully wired into the main post list UI.
-- Post deletion workflow is not implemented in frontend UI (backend endpoint exists).
-- `SavedPosts` and `LikedPosts` pages expect flat post objects, while backend resources may return nested payloads (`post` object), which can cause data rendering mismatches.
+- UI/UX is still basic (no optimistic rollback strategy, no toast system, minimal per-action feedback).
+- API modules still have overlap (`posts.ts`, `savedPosts.ts`, `likes.ts`) and should be consolidated.
 - Unused or partially integrated components/files remain (e.g., `PostCard` is minimal and not used as the primary rendering component).
 
 ### Tasks To Be Performed
 
-- Implement Save/Unsave and Like/Unlike buttons in post cards (Home, UserPosts, MyPosts as needed).
-- Implement Delete post action with confirmation and proper error handling.
-- Normalize API response parsing for paginated/nested structures (especially saved/liked resources).
 - Consolidate duplicate API modules (`posts.ts`, `savedPosts.ts`, `likes.ts`) and align types.
 - Improve UI feedback (optimistic updates, loading states per action, toast notifications).
 - Add/expand frontend tests (unit + integration/E2E for auth, post CRUD, save/like).
@@ -121,27 +119,23 @@ This README summarizes the current implementation status as of 2026-04-06, separ
 - Saved/Liked:
   - Add/remove/list saved posts and likes
   - Gate checks ensure visibility constraints for non-owner posts
+  - Saved/Liked list responses now return flat post-like entries with consistent fields
 
 ### Implementation Issues (Known Gaps)
 
-- `LikeResource` currently falls back to `parent::toArray()`, resulting in raw model serialization and inconsistent response shape versus other resources.
-- `SavedPostResource` wraps post data under `post`, while frontend currently often expects direct post fields; API contract is not consistently consumed.
 - Some policy classes (`SavedPostPolicy`, `LikePolicy`) are mostly stubbed (`false` returns), while actual authorization relies on Gates; this can be confusing and should be unified.
-- Minor model method issues/typos exist in `User` model (`hasone`, `hashMany`) and should be standardized for maintainability.
+- API contract is improved for saved/liked endpoints, but formal API schema documentation is still pending.
 
 ### Tasks To Be Performed
 
-- Define and enforce a strict API response contract for saved/liked endpoints.
-- Refactor `LikeResource` to explicit structured output (align with `SavedPostResource`/`PostSummaryResource`).
 - Decide between Policy-based or Gate-based authorization for save/like and unify approach.
 - Add/expand feature tests for response shapes and authorization edge cases.
-- Review and clean model relationships/method naming consistency.
 - Add API documentation (OpenAPI or markdown endpoint spec with request/response examples).
 
 ---
 
 ## Recommended Next Milestone
 
-1. **Contract alignment first**: finalize backend response schemas for posts/saved/likes.
-2. **Frontend integration second**: wire save/like/delete actions and fix parsing based on finalized contract.
-3. **Quality hardening third**: add tests, error handling improvements, and docs.
+1. **Quality hardening first**: increase feature/unit test coverage for saved/liked/delete flows and response contracts.
+2. **Authorization unification second**: choose Policy or Gate strategy for save/like and apply consistently.
+3. **Documentation third**: publish explicit API contract documentation (OpenAPI or endpoint spec).

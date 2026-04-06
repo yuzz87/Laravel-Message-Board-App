@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Layout from "../components/Layout";
-import { getPosts } from "../api/posts";
+import { getPosts, likePost, savePost, unlikePost, unsavePost } from "../api/posts";
+import { useAuth } from "../contexts/useAuth";
 
 type PostUser = {
   id: number;
@@ -16,13 +17,17 @@ type Post = {
   created_at: string;
   likes_count?: number;
   is_liked?: boolean;
+  is_saved?: boolean;
   user?: PostUser;
 };
 
 export default function Home() {
+  const { isAuthenticated } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [savingId, setSavingId] = useState<number | null>(null);
+  const [likingId, setLikingId] = useState<number | null>(null);
 
   useEffect(() => {
     async function fetchPosts() {
@@ -53,6 +58,63 @@ export default function Home() {
     void fetchPosts();
   }, []);
 
+  async function handleToggleLike(post: Post) {
+    try {
+      setLikingId(post.id);
+      if (post.is_liked) {
+        await unlikePost(post.id);
+        setPosts((prev) =>
+          prev.map((item) =>
+            item.id === post.id
+              ? {
+                  ...item,
+                  is_liked: false,
+                  likes_count:
+                    typeof item.likes_count === "number" ? Math.max(0, item.likes_count - 1) : 0,
+                }
+              : item
+          )
+        );
+        return;
+      }
+
+      await likePost(post.id);
+      setPosts((prev) =>
+        prev.map((item) =>
+          item.id === post.id
+            ? {
+                ...item,
+                is_liked: true,
+                likes_count: typeof item.likes_count === "number" ? item.likes_count + 1 : 1,
+              }
+            : item
+        )
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "いいね操作に失敗しました");
+    } finally {
+      setLikingId(null);
+    }
+  }
+
+  async function handleToggleSave(post: Post) {
+    try {
+      setSavingId(post.id);
+      if (post.is_saved) {
+        await unsavePost(post.id);
+        setPosts((prev) => prev.map((item) => (item.id === post.id ? { ...item, is_saved: false } : item)));
+        return;
+      }
+
+      await savePost(post.id);
+      setPosts((prev) => prev.map((item) => (item.id === post.id ? { ...item, is_saved: true } : item)));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "保存操作に失敗しました");
+    } finally {
+      setSavingId(null);
+    }
+  }
+
   return (
     <Layout title="Home">
       <section className="posts-section">
@@ -81,6 +143,16 @@ export default function Home() {
                   <div className="post-card-links">
                     <Link to={`/users/${post.user.id}`}>User Profile</Link>
                     <Link to={`/users/${post.user.id}/posts`}>User Posts</Link>
+                    {isAuthenticated && (
+                      <>
+                        <button type="button" onClick={() => void handleToggleSave(post)} disabled={savingId === post.id}>
+                          {post.is_saved ? "Unsave" : "Save"}
+                        </button>
+                        <button type="button" onClick={() => void handleToggleLike(post)} disabled={likingId === post.id}>
+                          {post.is_liked ? "Unlike" : "Like"}
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </article>

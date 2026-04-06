@@ -16,14 +16,13 @@
 3. 主要フローに対してテストを追加し、再発を防止する。
 
 **完了条件（Definition of Done）**
-- [ ] `LikeResource` を明示的フィールド返却へ変更し、`SavedPostResource` と整合の取れた仕様書（READMEまたはAPIドキュメント）を更新。
-- [ ] frontend の `SavedPosts` / `LikedPosts` / 関連一覧で、契約に沿って正しく表示される（本文・投稿者・likes_countなど）。
-- [ ] Save/Unsave, Like/Unlike, Delete のUI操作が主要画面で実行可能。
-- [ ] backend feature tests と frontend 側の最低限の動作検証（手動手順または自動テスト）を追加。
-- [ ] 変更後の既知不備をREADMEに再反映。
+- [x] `LikeResource` を明示的フィールド返却へ変更し、`SavedPostResource` と整合の取れた仕様書（READMEまたはAPIドキュメント）を更新。
+- [x] frontend の `SavedPosts` / `LikedPosts` / 関連一覧で、契約に沿って正しく表示される（本文・投稿者・likes_countなど）。
+- [x] Save/Unsave, Like/Unlike, Delete のUI操作が主要画面で実行可能。
+- [ ] backend feature tests と frontend 側の最低限の動作検証（手動手順または自動テスト）を追加。※依存関係取得のネットワーク制約により自動テスト実行は未完。
+- [x] 変更後の既知不備をREADMEに再反映。
 
 **実装順（推奨）**
 1. backend response contract を先に確定。  
 2. frontend を contract に追従。  
 3. テスト・ドキュメントを追加。
-

@@ -12,6 +12,8 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens; // 認証用 
 use App\Models\Profile;
 use App\Models\Post;
+use App\Models\SavedPost;
+use App\Models\Like;
 // 簡単な書き方(attribute形式)
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -30,10 +32,10 @@ class User extends Authenticatable
     }
     // 一対一
     public function profile(){
-        return $this->hasone(Profile::class);
+        return $this->hasOne(Profile::class);
     }
     public function savedPosts(){
-        return $this->hashMany(SavedPost::class);
+        return $this->hasMany(SavedPost::class);
     }
     public function savedPostItems(){
         return $this-> belongsToMany(Post::class,'saved_posts')->withTimestamps();

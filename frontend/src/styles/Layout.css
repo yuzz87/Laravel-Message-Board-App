@@ -1,0 +1,50 @@
+/*Base*/
+* {
+  box-sizing: border-box;
+  margin: 0%;
+  padding: 0%;
+}
+/*root*/
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+}
+body {
+  min-height: 100vh;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  color: #222;
+  background:
+  /*ぼかし*/
+  /*(色,透明度), 0~10%まで半透明(大きさ)*/
+  /*楕円形(ellipse)*/
+    radial-gradient(
+      ellipse at 20% 20%,
+      rgba(255, 255, 255, 0.5) 10%,
+      transparent 11% /*11%で透明*/
+    ),
+    /*円*/
+    radial-gradient(
+        circle at 80% 25%,
+        rgba(255, 255, 255, 0.45) 0 8%,
+        transparent 9%
+      ),
+    /*帯状の光や色の流れ*/
+    radial-gradient(
+        circle at 30% 80%,
+        rgba(255, 255, 255, 0.22) 0 9%,
+        transparent 10%
+      ),
+    /*全体のベース*/ linear-gradient(180deg, #ffe4f1, #f3e8ff);
+}
+button {
+  border: 1px solid #000;
+  background: wheat;
+  color: black;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  cursor: pointer;
+}

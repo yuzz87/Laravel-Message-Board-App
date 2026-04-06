@@ -18,7 +18,7 @@ test1234
 
 ---
 
-# ジョン版
+# 順番
 
 1. Home
 2. CreatePost

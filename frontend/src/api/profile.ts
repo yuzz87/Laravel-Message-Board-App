@@ -1,3 +1,4 @@
+// 型の形式を検討
 import api from "./client";
 
 type Profile = {

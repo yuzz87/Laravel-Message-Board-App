@@ -1,3 +1,5 @@
+// 型式を統一する
+// 重複している部分をどうするか
 import api from "./client";
 
 type ApiSuccess<T> = {

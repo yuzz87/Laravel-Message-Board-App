@@ -1,3 +1,4 @@
+// 本番用に変更する際
 import axios from "axios";
 
 const api = axios.create({
@@ -6,7 +7,7 @@ const api = axios.create({
     Accept: "application/json",
   },
 });
-
+//API前の共通処理
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 

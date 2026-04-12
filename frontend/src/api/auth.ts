@@ -1,5 +1,6 @@
 import api from "./client";
-
+// 型形式の統一をする
+// registerに型を作成する検討
 type LoginResponse = {
   success?: boolean;
   token?: string;

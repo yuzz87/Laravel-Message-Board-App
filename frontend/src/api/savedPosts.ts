@@ -1,8 +1,9 @@
+//likesと同様の課題
 import api from "./client";
 
 type ApiSuccess<T> = {
   success?: boolean;
-  data: T;
+  data: T;//中身->型引数
   message?: string;
 };
 

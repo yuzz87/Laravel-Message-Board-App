@@ -8,6 +8,10 @@ const api = axios.create({
   },
 });
 //API前の共通処理
+//現在：localStorage token -> bearer付与
+/************************************************/ 
+// 改善：coolie base に変更する
+/*********************************************** */ 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
 

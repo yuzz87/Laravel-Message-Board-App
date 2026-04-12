@@ -14,13 +14,13 @@ type Props = {
 };
 
 export function AuthProvider({ children }: Props) {
-  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));
+  const [token, setToken] = useState<string | null>(localStorage.getItem("token"));// localstorageから読み込んでいる
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function bootstrap() {
-      const storedToken = localStorage.getItem("token");
+      const storedToken = localStorage.getItem("token");//token残し
 
       if (!storedToken) {
         setToken(null);
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: Props) {
 
     void bootstrap();
   }, []);
-
+  //更新されるたびに、localstorageにtokenを保存している
   useEffect(() => {
     if (token) {
       localStorage.setItem("token", token);
